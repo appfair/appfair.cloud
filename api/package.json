@@ -1,0 +1,24 @@
+{
+  "name": "appfair-cloud-api",
+  "private": true,
+  "description": "App Fair's alternative app marketplace API on Cloudflare Workers: install tokens, restore and updates, App Store Connect ingestion, and the package redirector.",
+  "license": "MPL-2.0",
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply appfair-marketplace --remote"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "^0.3.7",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261112.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0",
+    "wrangler": "^4.160.1"
+  }
+}

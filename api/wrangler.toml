@@ -1,0 +1,74 @@
+# Copyright © The Daybrite Project
+# SPDX-License-Identifier: MPL-2.0
+#
+# App Fair's marketplace API (README.md). Deploy with `npm run deploy` after `npx wrangler login`.
+
+name = "appfair-cloud-api"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Served only on its own domains. (Containers still need the account to have a workers.dev
+# subdomain, but this Worker is not on it.)
+workers_dev = false
+preview_urls = false
+
+# The three hostnames, all on the appfair.cloud zone, each a Worker custom domain (Cloudflare
+# creates their DNS records and certificates). The bare domain answers only the .well-known file.
+routes = [
+  { pattern = "appfair.cloud", custom_domain = true },
+  { pattern = "api.appfair.cloud", custom_domain = true },
+  { pattern = "packages.appfair.cloud", custom_domain = true },
+]
+
+[vars]
+# App Fair's app record in App Store Connect: every install token's `iss`.
+MARKETPLACE_APPLE_ITEM_ID = "6480579814"
+# The alternative distribution key App Store Connect holds for App Fair (uploaded 2026-11-12).
+DISTRIBUTION_KEY_ID = "b3818104-a7f6-4bd7-8af0-ee63bad3e348"
+# The App Store Connect API key the Worker ingests packages with.
+ASC_KEY_ID = "5CTUPVSFS4"
+ASC_ISSUER_ID = "9b2a9042-d403-4446-9943-c7d314759365"
+API_BASE = "https://api.appfair.cloud"
+PACKAGES_BASE = "https://packages.appfair.cloud"
+# Static pieces on GitHub Pages: certificates and the license-resolution page.
+STATIC_BASE = "https://appfair.net/marketplace"
+# The App Fair Publisher's workflows, and the site whose build publishes the catalog.
+PUBLISHER_REPO = "appfair/appfair-apps"
+CATALOG_REPO = "appfair/appfair.net"
+OIDC_AUDIENCE = "https://api.appfair.cloud"
+# `redirect` (to the release asset) or `stream` (through the Worker), should iOS refuse a redirect.
+DOWNLOADS = "redirect"
+
+# Secrets, set with `npx wrangler secret put NAME`:
+#   DISTRIBUTION_KEY       the alternative distribution private key, PKCS#8 PEM
+#   ASC_KEY                the App Store Connect API key (.p8)
+#   KEY_BLOB_SECRET        32 random bytes, base64: seals key blobs at rest
+#   GITHUB_DISPATCH_TOKEN  may send repository_dispatch to PUBLISHER_REPO and CATALOG_REPO
+#   ALD_SIGNING_CERT, ALD_SIGNING_KEY, ALD_ENCRYPTION_CERT, ALD_ENCRYPTION_KEY, ALD_PASK
+#                          the App License Delivery assets, base64 of each file
+
+[[d1_databases]]
+binding = "DB"
+database_name = "appfair-marketplace"
+# Created 2026-11-12 (`npx wrangler d1 create appfair-marketplace`), region WEUR.
+database_id = "47bc3fd1-5f06-43de-a815-b0db241ff202"
+migrations_dir = "migrations"
+
+# The license container (../license/). Wrangler builds its image with Docker from the binary
+# ../license/scripts/build-linux.sh cross-compiles, so run that before deploying a change to it.
+[[containers]]
+class_name = "LicenseContainer"
+image = "../license/Dockerfile"
+max_instances = 2
+
+[[durable_objects.bindings]]
+name = "LICENSE"
+class_name = "LicenseContainer"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LicenseContainer"]
+
+[observability]
+enabled = true

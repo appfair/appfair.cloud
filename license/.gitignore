@@ -1,0 +1,6 @@
+/.build
+/.swiftpm
+# Apple's App License Delivery SDK: not redistributable (scripts/setup-ald-sdk.sh).
+/vendor/
+/Sources/SDKInterface
+/dist/

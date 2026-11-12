@@ -1,0 +1,7 @@
+# Machine-local Docker configuration (docker-env.sh).
+/.docker/
+
+# Dependencies and Wrangler's local state (dev databases, build output, `wrangler dev` secrets).
+node_modules/
+.wrangler/
+.dev.vars*

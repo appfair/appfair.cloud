@@ -1,0 +1,3 @@
+# Only the cross-compiled binary goes into the image (scripts/build-linux.sh).
+*
+!dist/appfair-license

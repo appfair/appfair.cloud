@@ -177,6 +177,10 @@ export class Marketplace {
         repo: v.repo,
         tag: v.tag,
         url: this.packageURL(v.appleItemId),
+        // When the marketplace took the version in.
+        date: new Date(v.createdAt).toISOString(),
+        // Each package path's release asset, for an AltStore source's `assetURLs`.
+        files: Object.fromEntries(v.assets.map((a) => [a.path, a.url])),
       })),
     };
   }

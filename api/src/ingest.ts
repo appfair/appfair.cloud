@@ -54,9 +54,12 @@ export interface PublishRequest {
   files: { name: string; source: string }[];
 }
 
-/** `variant/<id>.ipa` → `adp-<version>-variant-<id>.ipa`: release assets have flat names. */
+/**
+ * `variant/<id>.ipa` → `x-adp-<version>-variant-<id>.ipa`: release assets have flat names. The `x-`
+ * sorts them after the app's own assets, which GitHub lists alphabetically.
+ */
 export function assetName(version: string, path: string): string {
-  return `adp-${version}-${path.replace(/\//g, "-")}`;
+  return `x-adp-${version}-${path.replace(/\//g, "-")}`;
 }
 
 /** Ingest one package version: returns the pending version and what to ask the Publisher. */

@@ -21,7 +21,7 @@ The contract the App Fair app relies on is `App-Fair/docs/marketplace-server.md`
    signature) and each variant's and delta's download URL and key blob. It keeps the key blobs in
    D1, sealed with `KEY_BLOB_SECRET`, and records the version as pending.
 3. It sends `repository_dispatch` (`adp-available`) to `appfair/appfair-apps`, whose `adp.yml`
-   attaches the files to the app's release as `adp-<appleVersionId>-<path>` with the App Fair
+   attaches the files to the app's release as `x-adp-<appleVersionId>-<path>` with the App Fair
    Publisher's token, and calls back `POST /v1/published` with a GitHub OIDC token.
 4. The Worker marks the version available and asks `appfair/appfair.net` to rebuild
    (`marketplace-updated`), so the static catalog lists it.

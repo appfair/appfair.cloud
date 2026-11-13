@@ -199,6 +199,13 @@ describe("marketplace", () => {
     await store.putVersion(version({ appleVersionId: "900", bundleVersion: "240" }));
     const newer = await m.updates({ apps: [{ appleItemId: ITEM, appleVersionId: VERSION }] });
     expect(newer.updates[0]).toMatchObject({ appleVersionId: "900", bundleVersion: "240", shortVersionString: "1.4.23" });
+    // The catalog names every package path's release asset, for an AltStore source.
+    expect((await m.catalog()).apps[0].date).toBe("1970-01-01T00:00:00.001Z");
+    expect((await m.catalog()).apps[0].files).toEqual({
+      "manifest.json": "https://github.com/Net-Skip/Net-Skip/releases/download/1.4.23/x-adp-900-manifest.json",
+      signature: "https://github.com/x/sig",
+      "variant/a.ipa": "https://github.com/x/a.ipa",
+    });
     // A withdrawn app is gone everywhere.
     await store.setWithdrawn(ITEM, true);
     expect((await m.restore({ apps: [{ appleItemId: ITEM }] })).failures).toHaveLength(1);
@@ -210,7 +217,7 @@ describe("packages", () => {
   it("redirects to the release asset, newest or pinned, and refuses everything else", async () => {
     const store = new MemoryStore();
     await store.putVersion(version());
-    expect(await resolvePackage(store, `/${ITEM}/manifest.json`)).toMatch(/releases\/download\/1\.4\.23\/adp-869899373-manifest\.json$/);
+    expect(await resolvePackage(store, `/${ITEM}/manifest.json`)).toMatch(/releases\/download\/1\.4\.23\/x-adp-869899373-manifest\.json$/);
     expect(await resolvePackage(store, `/${ITEM}/${VERSION}/variant/a.ipa`)).toBe("https://github.com/x/a.ipa");
     expect(await resolvePackage(store, `/${ITEM}/../state`)).toBeUndefined();
     expect(await resolvePackage(store, `/${ITEM}/variant/missing.ipa`)).toBeUndefined();
@@ -273,10 +280,10 @@ describe("ingestion", () => {
     expect(v.size).toBe(805788);
     expect(v.assets.map((a) => a.path)).toEqual(["manifest.json", "signature", "variant/v1.ipa", "delta/d1.ipa"]);
     expect(publish.files).toEqual([
-      { name: "adp-869899373-manifest.json", source: "zip:manifest.json" },
-      { name: "adp-869899373-signature", source: "zip:signature" },
-      { name: "adp-869899373-variant-v1.ipa", source: "https://cdn/v1.ipa" },
-      { name: "adp-869899373-delta-d1.ipa", source: "https://cdn/d1.ipa" },
+      { name: "x-adp-869899373-manifest.json", source: "zip:manifest.json" },
+      { name: "x-adp-869899373-signature", source: "zip:signature" },
+      { name: "x-adp-869899373-variant-v1.ipa", source: "https://cdn/v1.ipa" },
+      { name: "x-adp-869899373-delta-d1.ipa", source: "https://cdn/d1.ipa" },
     ]);
     // Key blobs never leave the marketplace: not in the request to GitHub, and sealed at rest.
     expect(JSON.stringify(publish)).not.toContain(toBase64(strToU8("KEY1")));
@@ -286,7 +293,7 @@ describe("ingestion", () => {
     // The Publisher's callback makes it installable.
     const urls = Object.fromEntries(v.assets.map((a) => [a.path, `https://github.com/r/releases/download/t/${a.name}`]));
     expect(await store.publish(ITEM, VERSION, "Net-Skip/Net-Skip", "1.4.23", urls)).toBe(true);
-    expect(await resolvePackage(store, `/${ITEM}/delta/d1.ipa`)).toBe("https://github.com/r/releases/download/t/adp-869899373-delta-d1.ipa");
+    expect(await resolvePackage(store, `/${ITEM}/delta/d1.ipa`)).toBe("https://github.com/r/releases/download/t/x-adp-869899373-delta-d1.ipa");
   });
 
   it("reads notifications as hints", () => {
